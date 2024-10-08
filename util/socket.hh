@@ -3,7 +3,6 @@
 #include "address.hh"
 #include "file_descriptor.hh"
 
-#include <cstdint>
 #include <functional>
 #include <sys/socket.h>
 
@@ -31,25 +30,25 @@ protected:
   template<typename option_type>
   void setsockopt( int level, int option, const option_type& option_value );
 
-  void setsockopt( int level, int option, std::string_view option_val );
+  void setsockopt( int level, int option, std::string_view option_val ) const;
 
 public:
   //! Bind a socket to a specified address with [bind(2)](\ref man2::bind), usually for listen/accept
-  void bind( const Address& address );
+  void bind( const Address& address ) const;
 
   //! Bind a socket to a specified device
   void bind_to_device( std::string_view device_name );
 
   //! Connect a socket to a specified peer address with [connect(2)](\ref man2::connect)
-  void connect( const Address& address );
+  void connect( const Address& address ) const;
 
   //! Shut down a socket via [shutdown(2)](\ref man2::shutdown)
   void shutdown( int how );
 
   //! Get local address of socket with [getsockname(2)](\ref man2::getsockname)
-  Address local_address() const;
+  [[nodiscard]] Address local_address() const;
   //! Get peer address of socket with [getpeername(2)](\ref man2::getpeername)
-  Address peer_address() const;
+  [[nodiscard]] Address peer_address() const;
 
   //! Allow local address to be reused sooner via [SO_REUSEADDR](\ref man7::socket)
   void set_reuseaddr();
@@ -97,7 +96,7 @@ public:
   TCPSocket() : Socket( AF_INET, SOCK_STREAM ) {}
 
   //! Mark a socket as listening for incoming connections
-  void listen( int backlog = 16 );
+  void listen( int backlog = 16 ) const;
 
   //! Accept a new incoming connection
   TCPSocket accept();

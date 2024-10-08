@@ -49,16 +49,16 @@ struct IPv4Header
   uint32_t dst = 0;          // dst address
 
   // Length of the payload
-  uint16_t payload_length() const;
+  [[nodiscard]] uint16_t payload_length() const;
 
   // Pseudo-header's contribution to the TCP checksum
-  uint32_t pseudo_checksum() const;
+  [[nodiscard]] uint32_t pseudo_checksum() const;
 
   // Set checksum to correct value
   void compute_checksum();
 
   // Return a string containing a header in human-readable format
-  std::string to_string() const;
+  [[nodiscard]] std::string to_string() const;
 
   void parse( Parser& parser );
   void serialize( Serializer& serializer ) const;

@@ -78,7 +78,7 @@ public:
   FileDescriptor duplicate() const;
 
   // Set blocking(true) or non-blocking(false)
-  void set_blocking( bool blocking );
+  void set_blocking( bool blocking ) const;
 
   // Size of file
   off_t size() const;

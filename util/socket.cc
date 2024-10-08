@@ -3,17 +3,17 @@
 #include "exception.hh"
 
 #include <cstddef>
+#include <iostream>
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <stdexcept>
-#include <sys/ioctl.h>
-#include <unistd.h>
 
 using namespace std;
 
 // default constructor for socket of (subclassed) domain and type
 //! \param[in] domain is as described in [socket(7)](\ref man7::socket), probably `AF_INET` or `AF_UNIX`
 //! \param[in] type is as described in [socket(7)](\ref man7::socket)
+//! \param[in] protocol is protocol num
 Socket::Socket( const int domain, const int type, const int protocol )
   : FileDescriptor( ::CheckSystemCall( "socket", socket( domain, type, protocol ) ) )
 {}
@@ -77,7 +77,7 @@ Address Socket::peer_address() const
 
 // bind socket to a specified local address (usually to listen/accept)
 //! \param[in] address is a local Address to bind
-void Socket::bind( const Address& address )
+void Socket::bind( const Address& address ) const
 {
   CheckSystemCall( "bind", ::bind( fd_num(), address.raw(), address.size() ) );
 }
@@ -89,7 +89,7 @@ void Socket::bind_to_device( const string_view device_name )
 
 // connect socket to a specified peer address
 //! \param[in] address is the peer's Address
-void Socket::connect( const Address& address )
+void Socket::connect( const Address& address ) const
 {
   CheckSystemCall( "connect", ::connect( fd_num(), address.raw(), address.size() ) );
 }
@@ -153,7 +153,7 @@ void DatagramSocket::send( const string_view payload )
 
 // mark the socket as listening for incoming connections
 //! \param[in] backlog is the number of waiting connections to queue (see [listen(2)](\ref man2::listen))
-void TCPSocket::listen( const int backlog )
+void TCPSocket::listen( const int backlog ) const
 {
   CheckSystemCall( "listen", ::listen( fd_num(), backlog ) );
 }
@@ -188,7 +188,7 @@ void Socket::setsockopt( const int level, const int option, const option_type& o
 }
 
 // setsockopt with size only known at runtime
-void Socket::setsockopt( const int level, const int option, const string_view option_val )
+void Socket::setsockopt( const int level, const int option, const string_view option_val ) const
 {
   CheckSystemCall( "setsockopt", ::setsockopt( fd_num(), level, option, option_val.data(), option_val.size() ) );
 }

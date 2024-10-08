@@ -39,8 +39,8 @@ EventLoop::FDRule::FDRule( BasicRule&& base,
   , error( move( s_error ) )
 {}
 
-EventLoop::RuleHandle EventLoop::add_rule( size_t category_id,
-                                           FileDescriptor& fd,
+EventLoop::RuleHandle EventLoop::add_rule( const size_t category_id,
+                                           const FileDescriptor& fd,
                                            Direction direction,
                                            const CallbackT& callback,
                                            const InterestT& interest,
@@ -70,7 +70,7 @@ EventLoop::RuleHandle EventLoop::add_rule( const size_t category_id,
   return RuleHandle { _non_fd_rules.back() };
 }
 
-void EventLoop::RuleHandle::cancel()
+void EventLoop::RuleHandle::cancel() const
 {
   const shared_ptr<BasicRule> rule_shared_ptr = rule_weak_ptr_.lock();
   if ( rule_shared_ptr ) {
@@ -204,7 +204,7 @@ EventLoop::Result EventLoop::wait_next_event( const int timeout_ms )
     }
 
     if ( poll_ready ) {
-      // we only want to call callback if revents includes the event we asked for
+      // we only want to call callback if events includes the event we asked for
       const auto count_before = this_rule.service_count();
       this_rule.callback();
 

@@ -24,7 +24,7 @@ int main( int argc, char** argv )
 
     bool server_mode = false;
     // NOLINTNEXTLINE(bugprone-assignment-*)
-    if ( argc < 3 || ( ( server_mode = ( strncmp( "-l", args[1], 3 ) == 0 ) ) && argc < 4 ) ) {
+    if ( argc < 3 || ( ( server_mode = strncmp( "-l", args[1], 3 ) == 0 ) && argc < 4 ) ) {
       show_usage( args[0] );
       return EXIT_FAILURE;
     }

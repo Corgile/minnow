@@ -2,8 +2,6 @@
 #include "checksum.hh"
 
 #include <arpa/inet.h>
-#include <array>
-#include <cstddef>
 #include <sstream>
 
 using namespace std;

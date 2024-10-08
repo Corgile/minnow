@@ -5,7 +5,6 @@
 #include <memory>
 #include <ostream>
 #include <poll.h>
-#include <string_view>
 
 #include "file_descriptor.hh"
 
@@ -50,7 +49,7 @@ private:
 
     //! Returns the number of times fd has been read or written, depending on the value of Rule::direction.
     //! \details This function is used internally by EventLoop; you will not need to call it
-    unsigned int service_count() const;
+    [[nodiscard]] unsigned int service_count() const;
   };
 
   std::vector<RuleCategory> _rule_categories {};
@@ -80,31 +79,29 @@ public:
     explicit RuleHandle( const std::shared_ptr<RuleType> x ) : rule_weak_ptr_( x )
     {}
 
-    void cancel();
+    void cancel() const;
   };
 
   RuleHandle add_rule(
     size_t category_id,
-    FileDescriptor& fd,
+    const FileDescriptor& fd,
     Direction direction,
     const CallbackT& callback,
     const InterestT& interest = [] { return true; },
     const CallbackT& cancel = [] {},
     const CallbackT& error = [] {} );
 
-  RuleHandle add_rule(
-    size_t category_id,
-    const CallbackT& callback,
-    const InterestT& interest = [] { return true; } );
+  RuleHandle
+  add_rule( size_t category_id, const CallbackT& callback, const InterestT& interest = [] { return true; } );
 
   //! Calls [poll(2)](\ref man2::poll) and then executes callback for each ready fd.
   Result wait_next_event( int timeout_ms );
 
   // convenience function to add category and rule at the same time
-  template<typename... Targs>
-  auto add_rule( const std::string& name, Targs&&... Fargs )
+  template<typename... TArgs>
+  auto add_rule( const std::string& name, TArgs&&... fArgs )
   {
-    return add_rule( add_category( name ), std::forward<Targs>( Fargs )... );
+    return add_rule( add_category( name ), std::forward<TArgs>( fArgs )... );
   }
 };
 

@@ -190,7 +190,7 @@ size_t FileDescriptor::write( const vector<string_view>& buffers )
   return bytes_written;
 }
 
-void FileDescriptor::set_blocking( bool blocking )
+void FileDescriptor::set_blocking( bool blocking ) const
 {
   int flags = CheckSystemCall( "fcntl", fcntl( fd_num(), F_GETFL ) ); // NOLINT(*-vararg)
   if ( blocking ) {
