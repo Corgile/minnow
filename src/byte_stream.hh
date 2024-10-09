@@ -21,6 +21,7 @@ public:
   [[nodiscard]] const Reader& reader() const;
   [[nodiscard]] const Writer& writer() const;
   [[nodiscard]] bool has_error() const { return error_; } // Has the stream had an error?
+  [[nodiscard]] size_t capacity() const { return capacity_; }
 
 protected:
   // Please add any additional state to the ByteStream here, and not to the Writer and Reader interfaces.
@@ -40,9 +41,13 @@ public:
   void push( std::string data ); // Push data to stream, but only as much as available capacity allows.
   void close();                  // Signal that the stream has reached its ending. Nothing more will be written.
 
+  [[nodiscard]] bool is_full() const;                // Has the stream been closed?
   [[nodiscard]] bool is_closed() const;              // Has the stream been closed?
   [[nodiscard]] uint64_t available_capacity() const; // How many bytes can be pushed to the stream right now?
   [[nodiscard]] uint64_t bytes_pushed() const;       // Total number of bytes cumulatively pushed to the stream
+  [[nodiscard]] uint64_t capacity() const;           // How many bytes can be pushed to the stream right now?
+  [[nodiscard]] inline uint64_t write_index() const { return bytes_pushed(); }
+  [[nodiscard]] inline uint64_t right_bound() const { return write_index() + available_capacity(); }
 };
 
 class Reader : public ByteStream

@@ -27,6 +27,10 @@ void Writer::close()
 {
   closed_ = true;
 }
+bool Writer::is_full() const
+{
+  return available_capacity() == 0UL;
+}
 
 uint64_t Writer::available_capacity() const
 {
@@ -36,6 +40,11 @@ uint64_t Writer::available_capacity() const
 uint64_t Writer::bytes_pushed() const
 {
   return bytes_pushed_;
+}
+
+uint64_t Writer::capacity() const
+{
+  return capacity_;
 }
 
 bool Reader::is_finished() const
