@@ -28,7 +28,7 @@ protected:
   bool error_ {};
   bool closed_ {};
   std::size_t capacity_;
-  std::size_t read_prefix_ {};
+  std::size_t pop_prefix_ {}; // 一个字符串中popped但没完全popped的部分
   std::size_t bytes_popped_ {};
   std::size_t bytes_pushed_ {};
   std::size_t bytes_available_ {};

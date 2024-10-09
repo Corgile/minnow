@@ -62,9 +62,9 @@ string_view Reader::peek() const
   if ( buffers_.empty() ) {
     return {};
   }
-  auto const& value = buffers_.front();
-  // 不用一次性全部peek出去
-  return { value.data() + read_prefix_, value.length() - read_prefix_ };
+  std::string_view peeked { buffers_.front() };
+  peeked.remove_prefix( pop_prefix_ );
+  return peeked; // NOLINT
 }
 
 void Reader::pop( uint64_t len )
@@ -73,13 +73,13 @@ void Reader::pop( uint64_t len )
   bytes_available_ -= len;
   bytes_popped_ += len;
   while ( len != 0LU ) {
-    std::size_t const size { buffers_.front().size() - read_prefix_ };
+    std::size_t const size { buffers_.front().size() - pop_prefix_ };
     if ( len < size ) {
-      read_prefix_ += len;
+      pop_prefix_ += len;
       break; // with len = 0;
     }
     buffers_.pop_front();
-    read_prefix_ = 0;
+    pop_prefix_ = 0;
     len -= size;
   }
 }
