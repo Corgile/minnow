@@ -21,18 +21,12 @@ void Writer::push( string const& data )
   if ( sv.size() > available_capacity() ) {
     sv.remove_suffix( sv.size() - available_capacity() );
   }
-  size_t i = 0, idx = static_cast<long>(write_index_ % capacity_);
-  auto n { ( sv.length() + 7 ) >> 3 };
-  switch ( sv.length() & 0x7 ) { // NOLINT
-    case 0: do { buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 7:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 6:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 5:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 4:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 3:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 2:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
-    case 1:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_;
-            } while ( --n );
+  size_t i {}, idx { write_index_ % capacity_ };
+  while ( i < sv.length() ) {
+    buffers_[idx++] = sv[i++];
+    if ( idx == capacity_ ) [[unlikely]] {
+      idx %= capacity_;
+    }
   }
   write_index_ += sv.length();
 }
@@ -70,14 +64,14 @@ string_view Reader::peek() const
 {
   auto const real_r { read_index_ % capacity_ };
   auto const real_w { write_index_ % capacity_ };
-  long const r_idx { static_cast<long>(read_index_ % capacity_) };
+  long const r_idx { static_cast<long>( read_index_ % capacity_ ) };
   size_t len {};
-  if (real_r < real_w) {
+  if ( real_r < real_w ) {
     len = real_w - real_r;
   } else {
-    len = (bytes_buffered() != 0) * ( capacity_ - real_r );
+    len = ( bytes_buffered() != 0 ) * ( capacity_ - real_r );
   }
-  return { &*(buffers_.begin() + r_idx),  len};
+  return { &*( buffers_.begin() + r_idx ), len };
 }
 
 void Reader::pop( uint64_t len )
