@@ -2,25 +2,39 @@
 
 using namespace std;
 
-ByteStream::ByteStream( uint64_t const capacity ) : capacity_( capacity ) {}
+ByteStream::ByteStream( uint64_t const capacity ) : capacity_( capacity )
+{
+  buffers_.resize( capacity_ );
+}
 
 bool Writer::is_closed() const
 {
   return closed_;
 }
 
-void Writer::push( string data )
+void Writer::push( string const& data )
 {
-  if ( is_closed() or available_capacity() == 0 or data.empty() ) {
+  std::string_view sv { data };
+  if ( is_closed() or available_capacity() == 0 or sv.empty() ) {
     return;
   }
-  if ( data.size() > available_capacity() ) {
-    data.resize( available_capacity() );
+  if ( sv.size() > available_capacity() ) {
+    sv.remove_suffix( sv.size() - available_capacity() );
   }
-  bytes_pushed_ += data.size();
-  bytes_available_ += data.size();
-
-  buffers_.emplace_back( std::move( data ) );
+  size_t i = 0, idx = static_cast<long>(write_index_ % capacity_);
+  auto n { ( sv.length() + 7 ) >> 3 };
+  switch ( sv.length() & 0x7 ) { // NOLINT
+    case 0: do { buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 7:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 6:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 5:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 4:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 3:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 2:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_; [[fallthrough]];
+    case 1:      buffers_[idx++] = sv[i++], idx -= (idx == capacity_) * capacity_;
+            } while ( --n );
+  }
+  write_index_ += sv.length();
 }
 
 void Writer::close()
@@ -34,57 +48,45 @@ bool Writer::is_full() const
 
 uint64_t Writer::available_capacity() const
 {
-  return capacity_ - bytes_available_;
+  return capacity_ - ( write_index_ - read_index_ );
 }
 
 uint64_t Writer::bytes_pushed() const
 {
-  return bytes_pushed_;
-}
-
-uint64_t Writer::capacity() const
-{
-  return capacity_;
+  return write_index_;
 }
 
 bool Reader::is_finished() const
 {
-  return closed_ and bytes_available_ == 0;
+  return closed_ and bytes_buffered() == 0;
 }
 
 uint64_t Reader::bytes_popped() const
 {
-  return bytes_popped_;
+  return read_index_;
 }
 
 string_view Reader::peek() const
 {
-  if ( buffers_.empty() ) {
-    return {};
+  auto const real_r { read_index_ % capacity_ };
+  auto const real_w { write_index_ % capacity_ };
+  long const r_idx { static_cast<long>(read_index_ % capacity_) };
+  size_t len {};
+  if (real_r < real_w) {
+    len = real_w - real_r;
+  } else {
+    len = (bytes_buffered() != 0) * ( capacity_ - real_r );
   }
-  auto const& value = buffers_.front();
-  // 不用一次性全部peek出去
-  return { value.data() + read_prefix_, value.length() - read_prefix_ };
+  return { &*(buffers_.begin() + r_idx),  len};
 }
 
 void Reader::pop( uint64_t len )
 {
-  len = std::min( len, bytes_available_ );
-  bytes_available_ -= len;
-  bytes_popped_ += len;
-  while ( len != 0LU ) {
-    std::size_t const size { buffers_.front().size() - read_prefix_ };
-    if ( len < size ) {
-      read_prefix_ += len;
-      break; // with len = 0;
-    }
-    buffers_.pop_front();
-    read_prefix_ = 0;
-    len -= size;
-  }
+  len = std::min( len, bytes_buffered() );
+  read_index_ += len;
 }
 
 uint64_t Reader::bytes_buffered() const
 {
-  return bytes_available_;
+  return write_index_ - read_index_;
 }

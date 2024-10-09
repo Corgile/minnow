@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <deque>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class Reader;
 class Writer;
@@ -28,26 +28,23 @@ protected:
   bool error_ {};
   bool closed_ {};
   std::size_t capacity_;
-  std::size_t read_prefix_ {};
-  std::size_t bytes_popped_ {};
-  std::size_t bytes_pushed_ {};
-  std::size_t bytes_available_ {};
-  std::deque<std::string> buffers_ {};
+  std::size_t read_index_ {};
+  std::size_t write_index_ {};
+  std::vector<char> buffers_ {};
 };
 
 class Writer : public ByteStream
 {
 public:
-  void push( std::string data ); // Push data to stream, but only as much as available capacity allows.
+  void push( std::string const& data ); // Push data to stream, but only as much as available capacity allows.
   void close();                  // Signal that the stream has reached its ending. Nothing more will be written.
 
   [[nodiscard]] bool is_full() const;                // Has the stream been closed?
   [[nodiscard]] bool is_closed() const;              // Has the stream been closed?
   [[nodiscard]] uint64_t available_capacity() const; // How many bytes can be pushed to the stream right now?
   [[nodiscard]] uint64_t bytes_pushed() const;       // Total number of bytes cumulatively pushed to the stream
-  [[nodiscard]] uint64_t capacity() const;           // How many bytes can be pushed to the stream right now?
-  [[nodiscard]] inline uint64_t write_index() const { return bytes_pushed(); }
-  [[nodiscard]] inline uint64_t right_bound() const { return write_index() + available_capacity(); }
+  [[nodiscard]] uint64_t write_index() const { return write_index_; }
+  [[nodiscard]] uint64_t right_bound() const { return write_index_ + available_capacity(); }
 };
 
 class Reader : public ByteStream
