@@ -2,16 +2,16 @@
 
 void TCPReceiver::receive( TCPSenderMessage message )
 {
+  if ( message.RST ) { reader().set_error(); }
   if ( writer().has_error() ) { return; }
-  if ( message.RST ) { return reader().set_error(); }
 
   if ( not zero_point_.has_value() ) {
     if ( not message.SYN ) { return; }
     zero_point_.emplace( message.seqno );
   }
-  const uint64_t checkpoint { writer().bytes_pushed() + 1 /* SYN */ };
-  const uint64_t abs_seqno { message.seqno.unwrap( zero_point_.value(), checkpoint ) };
-  const uint64_t stream_index { abs_seqno + static_cast<uint64_t>( message.SYN ) - 1 /* SYN */ };
+  uint64_t const checkpoint { writer().bytes_pushed() + 1 /* SYN */ };
+  uint64_t const abs_seqno { message.seqno.unwrap( zero_point_.value(), checkpoint ) };
+  uint64_t const stream_index { abs_seqno + static_cast<uint64_t>( message.SYN ) - 1 /* SYN */ };
   reassembler_.insert( stream_index, std::move( message.payload ), message.FIN );
 }
 

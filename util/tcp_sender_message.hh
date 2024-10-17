@@ -33,5 +33,6 @@ struct TCPSenderMessage
   bool RST {};
 
   // How many sequence numbers does this segment use?
-  size_t sequence_length() const { return SYN + payload.size() + FIN; }
+  [[nodiscard]] size_t sequence_length() const { return SYN + payload.size() + FIN; }
+  [[nodiscard]] bool empty() const { return sequence_length() == 0; }
 };

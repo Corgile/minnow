@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-/*
+/**
  * read: A helper function that peeks and pops up to `len` bytes
  * from a ByteStream Reader into a string;
  */
