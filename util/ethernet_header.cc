@@ -3,15 +3,13 @@
 #include <iomanip>
 #include <sstream>
 
-using namespace std;
-
 //! \returns A string with a textual representation of an Ethernet address
-string to_string( const EthernetAddress address )
+std::string to_string( const EthernetAddress address )
 {
-  stringstream ss {};
+  std::stringstream ss {};
   for ( size_t index = 0; index < address.size(); index++ ) {
     ss.width( 2 );
-    ss << setfill( '0' ) << hex << static_cast<int>( address.at( index ) );
+    ss << std::setfill( '0' ) << std::hex << static_cast<int>( address.at( index ) );
     if ( index != address.size() - 1 ) {
       ss << ":";
     }
@@ -20,9 +18,9 @@ string to_string( const EthernetAddress address )
 }
 
 //! \returns A string with the header's contents
-string EthernetHeader::to_string() const
+std::string EthernetHeader::to_string() const
 {
-  stringstream ss {};
+  std::stringstream ss {};
   ss << "dst=" << ::to_string( dst );
   ss << " src=" << ::to_string( src );
   ss << " type=";
@@ -34,7 +32,7 @@ string EthernetHeader::to_string() const
       ss << "ARP";
       break;
     default:
-      ss << "[unknown type " << hex << type << "!]";
+      ss << "[unknown type " << std::hex << type << "!]";
       break;
   }
 

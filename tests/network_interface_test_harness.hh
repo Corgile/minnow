@@ -1,12 +1,13 @@
 #pragma once
 
-#include <compare>
 #include <optional>
 #include <utility>
 
 #include "arp_message.hh"
 #include "common.hh"
 #include "network_interface.hh"
+
+#include <numeric>
 
 class FramesOut : public NetworkInterface::OutputPort
 {
@@ -24,7 +25,7 @@ public:
   NetworkInterfaceTestHarness( std::string test_name,
                                const EthernetAddress& ethernet_address,
                                const Address& ip_address )
-    : TestHarness( move( test_name ), "eth=" + to_string( ethernet_address ) + ", ip=" + ip_address.ip(), [&] {
+    : TestHarness( std::move( test_name ), "eth=" + to_string( ethernet_address ) + ", ip=" + ip_address.ip(), [&] {
       const Output output { std::make_shared<FramesOut>() };
       const NetworkInterface iface { "test", output, ethernet_address, ip_address };
       return InterfaceAndOutput { iface, output };

@@ -31,13 +31,9 @@ void TCPMinnowSocket<AdaptT>::_tcp_loop( const std::function<bool()>& condition 
   auto base_time = timestamp_ms();
   while ( condition() ) {
     auto ret = _eventloop.wait_next_event( TCP_TICK_MS );
-    if ( ret == EventLoop::Result::Exit or _abort ) {
-      break;
-    }
+    if ( ret == EventLoop::Result::Exit or _abort ) { break; }
 
-    if ( not _tcp.has_value() ) {
-      throw std::runtime_error( "_tcp_loop entered before TCPPeer initialized" );
-    }
+    if ( not _tcp.has_value() ) { throw std::runtime_error( "_tcp_loop entered before TCPPeer initialized" ); }
 
     if ( _tcp.value().active() ) {
       const auto next_time = timestamp_ms();
@@ -222,9 +218,7 @@ void TCPMinnowSocket<AdaptT>::wait_until_closed()
 template<TCPDatagramAdapter AdaptT>
 void TCPMinnowSocket<AdaptT>::connect( const TCPConfig& c_tcp, const FdAdapterConfig& c_ad )
 {
-  if ( _tcp ) {
-    throw std::runtime_error( "connect() with TCPConnection already initialized" );
-  }
+  if ( _tcp ) { throw std::runtime_error( "connect() with TCPConnection already initialized" ); }
 
   _initialize_TCP( c_tcp );
 
@@ -232,17 +226,16 @@ void TCPMinnowSocket<AdaptT>::connect( const TCPConfig& c_tcp, const FdAdapterCo
 
   std::cerr << "DEBUG: minnow connecting to " << c_ad.destination.to_string() << "...\n";
 
-  if ( not _tcp.has_value() ) {
-    throw std::runtime_error( "TCPPeer not successfully initialized" );
-  }
+  if ( not _tcp.has_value() ) { throw std::runtime_error( "TCPPeer not successfully initialized" ); }
 
-  _tcp->push( [&]( auto x ) { _datagram_adapter.write( x ); } );
+  _tcp->push( [&]( TCPMessage x ) { _datagram_adapter.write( x ); } );
 
   if ( _tcp->sender().sequence_numbers_in_flight() != 1 ) {
     throw std::runtime_error( "After TCPConnection::connect(), expected sequence_numbers_in_flight() == 1" );
   }
 
   _tcp_loop( [&] { return _tcp->sender().sequence_numbers_in_flight() == 1; } );
+
   if ( _tcp->inbound_reader().has_error() ) {
     std::cerr << "DEBUG: minnow error on connecting to " << c_ad.destination.to_string() << ".\n";
   } else {
@@ -257,9 +250,7 @@ void TCPMinnowSocket<AdaptT>::connect( const TCPConfig& c_tcp, const FdAdapterCo
 template<TCPDatagramAdapter AdaptT>
 void TCPMinnowSocket<AdaptT>::listen_and_accept( const TCPConfig& c_tcp, const FdAdapterConfig& c_ad )
 {
-  if ( _tcp ) {
-    throw std::runtime_error( "listen_and_accept() with TCPConnection already initialized" );
-  }
+  if ( _tcp ) { throw std::runtime_error( "listen_and_accept() with TCPConnection already initialized" ); }
 
   _initialize_TCP( c_tcp );
 
@@ -277,9 +268,7 @@ template<TCPDatagramAdapter AdaptT>
 void TCPMinnowSocket<AdaptT>::_tcp_main()
 {
   try {
-    if ( not _tcp.has_value() ) {
-      throw std::runtime_error( "no TCP" );
-    }
+    if ( not _tcp.has_value() ) { throw std::runtime_error( "no TCP" ); }
     _tcp_loop( [] { return true; } );
     shutdown( SHUT_RDWR );
     if ( not _tcp.value().active() ) {

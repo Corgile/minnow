@@ -176,8 +176,7 @@ size_t FileDescriptor::write( const vector<string_view>& buffers )
     total_size += x.size();
   }
 
-  const ssize_t bytes_written
-    = CheckSystemCall( "writev", ::writev( fd_num(), iovecs.data(), static_cast<int>( iovecs.size() ) ) );
+  const ssize_t bytes_written  = CheckSystemCall( "writev", ::writev( fd_num(), iovecs.data(), static_cast<int>( iovecs.size() ) ) );
   register_write();
 
   if ( bytes_written == 0 and total_size != 0 ) {
