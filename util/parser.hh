@@ -190,7 +190,9 @@ public:
   void buffer( std::string buf )
   {
     flush();
-    output_.push_back( std::move( buf ) );
+    if ( not buf.empty() ) {
+      output_.push_back( std::move( buf ) );
+    }
   }
 
   void buffer( const std::vector<std::string>& bufs )
@@ -202,8 +204,10 @@ public:
 
   void flush()
   {
-    output_.emplace_back( std::move( buffer_ ) );
-    buffer_.clear();
+    if ( not buffer_.empty() ) {
+      output_.emplace_back( std::move( buffer_ ) );
+      buffer_.clear();
+    }
   }
 
   const std::vector<std::string>& output()
