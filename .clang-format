@@ -5,6 +5,7 @@ ColumnLimit: 116
 SpacesInParentheses: true
 AlwaysBreakAfterReturnType: None
 AlwaysBreakAfterDefinitionReturnType: None
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 SpaceBeforeCpp11BracedList: true
 BreakBeforeBinaryOperators: All
 Cpp11BracedListStyle: true

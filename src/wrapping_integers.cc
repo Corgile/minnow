@@ -2,18 +2,23 @@
 
 using namespace std;
 
-Wrap32 Wrap32::wrap( uint64_t n, Wrap32 zero_point )
+Wrap32 Wrap32::wrap( uint64_t const n, Wrap32 const isn )
 {
-  // Your code here.
-  (void)n;
-  (void)zero_point;
-  return Wrap32 { 0 };
+  return isn + n;
 }
 
-uint64_t Wrap32::unwrap( Wrap32 zero_point, uint64_t checkpoint ) const
+uint64_t Wrap32::unwrap( Wrap32 const seqno, uint64_t const checkpoint ) const
 {
-  // Your code here.
-  (void)zero_point;
-  (void)checkpoint;
-  return {};
+  if ( raw_value_ >= checkpoint ) {
+    return raw_value_ - seqno.wrapped_value();
+  }
+  auto const wrapped_checkpoint { wrap( checkpoint, seqno ).wrapped_value() };
+
+  uint32_t const counter_clockwise { wrapped_checkpoint - raw_value_ };
+  uint32_t const clockwise { raw_value_ - wrapped_checkpoint };
+
+  if ( counter_clockwise < clockwise ) {
+    return checkpoint - counter_clockwise;
+  }
+  return checkpoint + clockwise;
 }

@@ -1,6 +1,5 @@
 #include "reassembler.hh"
 
-#include <algorithm>
 #include <ranges>
 #include <string>
 

@@ -4,6 +4,8 @@
 #include "tcp_receiver_message.hh"
 #include "tcp_sender_message.hh"
 
+#define REM( reason ) [[nodiscard( #reason )]]
+
 class TCPReceiver
 {
 public:
@@ -17,14 +19,15 @@ public:
   void receive( TCPSenderMessage message );
 
   // The TCPReceiver sends TCPReceiverMessages to the peer's TCPSender.
-  TCPReceiverMessage send() const;
+  REM( 必须处理send的返回值 ) TCPReceiverMessage send() const;
 
   // Access the output (only Reader is accessible non-const)
-  const Reassembler& reassembler() const { return reassembler_; }
+  REM( 不允许忽略 ) const Reassembler& reassembler() const { return reassembler_; }
   Reader& reader() { return reassembler_.reader(); }
-  const Reader& reader() const { return reassembler_.reader(); }
-  const Writer& writer() const { return reassembler_.writer(); }
+  REM() const Reader& reader() const { return reassembler_.reader(); }
+  REM() const Writer& writer() const { return reassembler_.writer(); }
 
 private:
   Reassembler reassembler_;
+  std::optional<Wrap32> zero_point_ {};
 };
