@@ -87,3 +87,5 @@ private:
   uint64_t total_outstanding_ {};
   uint64_t total_retransmission_ {};
 };
+
+#undef REM
